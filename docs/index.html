@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8">
+<title>Student Gallery</title>
+
+<style>
+
+body{ 
+    margin:0;
+    font-family: Arial, Helvetica, sans-serif;
+    min-height: 100vh;
+    background: linear-gradient(135deg,#1e3c72,#2a5298);
+    color: linear-gradient(90deg, #9bbcff, #709df0);
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    text-align:center; 
+}
+
+h1 {
+    font-size: 40px;
+    letter-spacing: 2px;
+    background: rgb(37, 28, 28);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    color: transparent;
+}
+
+#mojDivVJs{
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px,1fr));
+    gap:25px;
+    padding:40px;
+    max-width:1200px;
+    margin:auto;
+}
+
+.drinkCard{
+    background: linear-gradient(90deg, #709df0, #3c5c94);
+    border-radius:15px;
+    padding:15px;
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    color:black;
+    box-shadow:0 10px 25px rgba(0,0,0,0.3);
+    transition:transform 0.3s, box-shadow 0.3s;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.drinkDetail{
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.drinkCard.active .drinkDetail{
+    max-height: 100px;
+    margin-top:10px;
+}
+
+.drinkCard.active{
+    background: linear-gradient(90deg, #9bbcff, #5a7bd8);
+}
+
+.drinkCard:hover{
+    transform:scale(1.05);
+    box-shadow:0 15px 35px rgba(0,0,0,0.4);
+}
+
+.drinkCard img{
+    width:100%;
+    border-radius:10px;
+}
+
+.drinkName{
+    margin-top:10px;
+    font-weight:bold;
+    font-size:18px;
+}
+
+footer{
+    margin-top:30px;
+    padding:20px;
+    opacity:0.7;
+}
+
+#mojDivVJS2{
+    margin: 10px;
+}
+
+#searchBar {
+  width: 300px;
+  padding: 10px 15px;
+  font-size: 16px;
+  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  border-radius: 10px;
+  border: none;
+  margin: 20px auto;
+  display: block; 
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  background: linear-gradient(90deg, #709df0, #3c5c94);
+  color: black; 
+}
+
+#searchBar::placeholder {
+  color: #444;
+  opacity: 1;
+}
+
+#searchBar:focus {
+  outline: none;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+  color: black;
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>Student</h1>
+<input type="text" id="searchBar" placeholder="Hľadaj študenta..." />
+<div id="mojDivVJs"></div>
+<div id="mojDivVJs2"></div>
+<div id="textDiv"></div>
+
+<footer>
+Student API demo
+</footer>
+
+<script>
+const mojDivVJs = document.getElementById("mojDivVJs");  // malé 's' na konci
+const searchBar = document.getElementById("searchBar");
+
+fetch("https://raw.githubusercontent.com/iitslukas/backend/refs/heads/main/docs/data.json")
+  .then(response => response.json())
+  .then(data => {
+    mojDivVJs.innerHTML = "";
+
+    data.forEach(student => {
+      const card = document.createElement("div");
+      card.className = "drinkCard";
+
+      const studentImg = document.createElement("img");
+      studentImg.src = student.image;
+
+      const studentName = document.createElement("div");
+      studentName.className = "drinkName";
+      studentName.textContent = `${student.meno} ${student.priezvisko}`;
+
+      const studentDetail = document.createElement("div");
+      studentDetail.className = "drinkDetail";
+      studentDetail.textContent = `ID: ${student.id || "neznámy"}`;
+
+      card.appendChild(studentImg);
+      card.appendChild(studentName);
+      card.appendChild(studentDetail);
+
+      card.addEventListener("click", () => {
+        document.querySelectorAll(".drinkCard").forEach(c => {
+          if (c !== card) c.classList.remove("active");
+        });
+        card.classList.toggle("active");
+      });
+
+      mojDivVJs.appendChild(card);
+    });
+  })
+  .catch(err => console.error("Chyba pri načítaní:", err));
+
+searchBar.addEventListener("input", () => {
+  const filter = searchBar.value.toLowerCase();
+  mojDivVJs.querySelectorAll(".drinkCard").forEach(card => {
+    const name = card.querySelector(".drinkName").textContent.toLowerCase();
+    card.style.display = name.includes(filter) ? "block" : "none";
+  });
+});
+</script>
+
+</body>
+</html>
