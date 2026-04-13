@@ -114,6 +114,21 @@ footer{
     50%      { box-shadow: 0 6px 38px rgba(167,139,250,0.75); }
 }
 
+.chatBtn {
+    display: block;
+    margin-top: 10px;
+    padding: 7px 14px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #709df0, #a78bfa);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    text-align: center;
+    transition: opacity 0.2s, transform 0.15s;
+}
+.chatBtn:hover { opacity: 0.88; transform: scale(1.03); }
+
 #mojDivVJS2{
     margin: 10px;
 }
@@ -182,7 +197,20 @@ fetch("https://raw.githubusercontent.com/iitslukas/backend/refs/heads/main/docs/
 
       const studentDetail = document.createElement("div");
       studentDetail.className = "drinkDetail";
-      studentDetail.textContent = `ID: ${student.id || "neznámy"}`;
+      studentDetail.innerHTML = `ID: ${student.id || "neznámy"}`;
+
+      const chatBtn = document.createElement("a");
+      chatBtn.className = "chatBtn";
+      chatBtn.textContent = "💬 Chatovať";
+      const params = new URLSearchParams({
+        id: student.id,
+        meno: student.meno,
+        priezvisko: student.priezvisko,
+        image: student.image
+      });
+      chatBtn.href = `chat.html?${params.toString()}`;
+      chatBtn.addEventListener("click", e => e.stopPropagation());
+      studentDetail.appendChild(chatBtn);
 
       card.appendChild(studentImg);
       card.appendChild(studentName);
