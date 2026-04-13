@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Chat Asistent – Student Gallery</title>
+  <meta name="description" content="AI chatbot asistent pre Student Gallery, powered by Google Gemini.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-from: #0f0c29;
+      --bg-mid:  #302b63;
+      --bg-to:   #24243e;
+      --accent:  #709df0;
+      --accent2: #a78bfa;
+      --glass-bg: rgba(255,255,255,0.07);
+      --glass-border: rgba(255,255,255,0.13);
+      --user-bubble: linear-gradient(135deg, #709df0, #3c5c94);
+      --ai-bubble: rgba(255,255,255,0.09);
+      --text: #e8eaf6;
+      --text-muted: #9fa8da;
+      --input-bg: rgba(255,255,255,0.08);
+      --shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, var(--bg-from), var(--bg-mid), var(--bg-to));
+      color: var(--text);
+      overflow: hidden;
+    }
+
+    /* ── MODAL ── */
+    #keyModal {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(10px);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 1000;
+      animation: fadeIn 0.3s ease;
+    }
+    #keyModal.hidden { display: none; }
+
+    .modal-card {
+      background: rgba(30,28,60,0.95);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 40px 36px;
+      max-width: 420px;
+      width: 90%;
+      box-shadow: var(--shadow);
+      text-align: center;
+      animation: slideUp 0.4s cubic-bezier(.16,1,.3,1);
+    }
+    .modal-card .gem-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+    .modal-card h2 {
+      font-size: 22px;
+      font-weight: 700;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+    .modal-card p {
+      color: var(--text-muted);
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+    .modal-card a { color: var(--accent2); text-decoration: none; }
+    .modal-card a:hover { text-decoration: underline; }
+
+    #apiKeyInput {
+      width: 100%;
+      padding: 13px 16px;
+      border-radius: 12px;
+      border: 1px solid var(--glass-border);
+      background: var(--input-bg);
+      color: var(--text);
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      margin-bottom: 12px;
+      transition: border-color 0.2s;
+    }
+    #apiKeyInput:focus { border-color: var(--accent); }
+    #apiKeyInput::placeholder { color: var(--text-muted); }
+
+    #saveKeyBtn {
+      width: 100%;
+      padding: 13px;
+      border-radius: 12px;
+      border: none;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.15s;
+    }
+    #saveKeyBtn:hover { opacity: 0.9; transform: translateY(-1px); }
+    #saveKeyBtn:active { transform: translateY(0); }
+
+    #keyError {
+      color: #f87171;
+      font-size: 13px;
+      margin-top: 8px;
+      min-height: 18px;
+    }
+
+    /* ── LAYOUT ── */
+    #app {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 16px;
+    }
+
+    /* ── HEADER ── */
+    header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 20px 0 16px;
+      border-bottom: 1px solid var(--glass-border);
+      flex-shrink: 0;
+    }
+    .header-avatar {
+      width: 46px; height: 46px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+      box-shadow: 0 0 20px rgba(112,157,240,0.4);
+    }
+    .header-info h1 {
+      font-size: 18px;
+      font-weight: 700;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .header-info .status {
+      font-size: 12px;
+      color: #4ade80;
+      display: flex; align-items: center; gap: 5px;
+      margin-top: 2px;
+    }
+    .status-dot {
+      width: 7px; height: 7px;
+      background: #4ade80;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    .header-actions { margin-left: auto; display: flex; gap: 8px; }
+    .icon-btn {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 10px;
+      padding: 8px 12px;
+      color: var(--text-muted);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .icon-btn:hover { background: rgba(255,255,255,0.12); color: var(--text); }
+
+    /* ── MESSAGES ── */
+    #messagesArea {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 0 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      scroll-behavior: smooth;
+    }
+    #messagesArea::-webkit-scrollbar { width: 5px; }
+    #messagesArea::-webkit-scrollbar-track { background: transparent; }
+    #messagesArea::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 10px; }
+
+    .msg-wrap {
+      display: flex;
+      gap: 10px;
+      animation: msgIn 0.35s cubic-bezier(.16,1,.3,1);
+    }
+    .msg-wrap.user { flex-direction: row-reverse; }
+
+    .msg-avatar {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      margin-top: 2px;
+    }
+    .msg-wrap.ai .msg-avatar {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      box-shadow: 0 0 12px rgba(112,157,240,0.3);
+    }
+    .msg-wrap.user .msg-avatar {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid var(--glass-border);
+    }
+
+    .bubble {
+      max-width: 72%;
+      padding: 13px 17px;
+      border-radius: 18px;
+      font-size: 14.5px;
+      line-height: 1.65;
+      position: relative;
+    }
+    .msg-wrap.ai .bubble {
+      background: var(--ai-bubble);
+      border: 1px solid var(--glass-border);
+      border-top-left-radius: 4px;
+      backdrop-filter: blur(8px);
+    }
+    .msg-wrap.user .bubble {
+      background: var(--user-bubble);
+      border-top-right-radius: 4px;
+      box-shadow: 0 4px 20px rgba(112,157,240,0.3);
+    }
+
+    /* Markdown-like formatting for AI */
+    .bubble strong { font-weight: 600; }
+    .bubble em { font-style: italic; color: var(--text-muted); }
+    .bubble code {
+      background: rgba(0,0,0,0.3);
+      padding: 2px 6px;
+      border-radius: 5px;
+      font-family: monospace;
+      font-size: 13px;
+    }
+    .bubble ul, .bubble ol { padding-left: 18px; margin: 6px 0; }
+    .bubble li { margin: 3px 0; }
+    .bubble p { margin-bottom: 6px; }
+    .bubble p:last-child { margin-bottom: 0; }
+
+    .msg-time {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      padding: 0 4px;
+    }
+    .msg-wrap.user .msg-time { text-align: right; }
+
+    /* ── WELCOME ── */
+    #welcome {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      text-align: center;
+      gap: 14px;
+      padding: 40px 20px;
+      animation: fadeIn 0.5s ease;
+    }
+    #welcome .big-icon { font-size: 60px; }
+    #welcome h2 {
+      font-size: 24px;
+      font-weight: 700;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    #welcome p { color: var(--text-muted); font-size: 14px; max-width: 340px; line-height: 1.6; }
+    .suggestion-chips {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      justify-content: center; margin-top: 8px;
+    }
+    .chip {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      padding: 8px 16px;
+      font-size: 13px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .chip:hover {
+      background: rgba(255,255,255,0.14);
+      color: var(--text);
+      border-color: var(--accent);
+    }
+
+    /* ── TYPING INDICATOR ── */
+    #typingIndicator {
+      display: none;
+      align-items: center; gap: 10px;
+      padding: 0 4px;
+      animation: msgIn 0.3s ease;
+    }
+    #typingIndicator.show { display: flex; }
+    .typing-avatar {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      box-shadow: 0 0 12px rgba(112,157,240,0.3);
+      flex-shrink: 0;
+    }
+    .typing-bubble {
+      background: var(--ai-bubble);
+      border: 1px solid var(--glass-border);
+      border-radius: 18px;
+      border-top-left-radius: 4px;
+      padding: 13px 18px;
+      display: flex; gap: 5px;
+      align-items: center;
+    }
+    .dot {
+      width: 7px; height: 7px;
+      background: var(--text-muted);
+      border-radius: 50%;
+      animation: bounce 1.3s infinite;
+    }
+    .dot:nth-child(2) { animation-delay: 0.2s; }
+    .dot:nth-child(3) { animation-delay: 0.4s; }
+
+    /* ── INPUT AREA ── */
+    #inputArea {
+      padding: 16px 0 24px;
+      flex-shrink: 0;
+    }
+    .input-wrapper {
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 18px;
+      padding: 10px 10px 10px 18px;
+      backdrop-filter: blur(12px);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .input-wrapper:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(112,157,240,0.15);
+    }
+
+    #msgInput {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-size: 14.5px;
+      font-family: 'Inter', sans-serif;
+      resize: none;
+      max-height: 140px;
+      line-height: 1.5;
+      padding: 4px 0;
+    }
+    #msgInput::placeholder { color: var(--text-muted); }
+    #msgInput::-webkit-scrollbar { width: 4px; }
+    #msgInput::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+
+    #sendBtn {
+      width: 40px; height: 40px;
+      border-radius: 12px;
+      border: none;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: transform 0.15s, opacity 0.2s;
+      flex-shrink: 0;
+    }
+    #sendBtn:hover { transform: scale(1.07); }
+    #sendBtn:active { transform: scale(0.95); }
+    #sendBtn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    .char-hint {
+      text-align: right;
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 6px;
+      padding-right: 4px;
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes msgIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes bounce { 0%,60%,100% { transform: translateY(0); } 30% { transform: translateY(-6px); } }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 520px) {
+      .bubble { max-width: 88%; font-size: 14px; }
+      #welcome h2 { font-size: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- API Key Modal -->
+<div id="keyModal">
+  <div class="modal-card">
+    <div class="gem-icon">💎</div>
+    <h2>Nastaviť Gemini API kľúč</h2>
+    <p>
+      Zadaj svoj Google Gemini API kľúč pre aktiváciu AI chatu.<br>
+      Kľúč sa uloží iba v tvojom prehliadači.<br>
+      <a href="https://aistudio.google.com/app/apikey" target="_blank">🔑 Získať kľúč zadarmo →</a>
+    </p>
+    <input id="apiKeyInput" type="password" placeholder="AIza..." autocomplete="off" />
+    <button id="saveKeyBtn">Aktivovať AI Chat ✨</button>
+    <div id="keyError"></div>
+  </div>
+</div>
+
+<!-- App -->
+<div id="app">
+  <header>
+    <div class="header-avatar">🤖</div>
+    <div class="header-info">
+      <h1>Gemini AI Asistent</h1>
+      <div class="status"><span class="status-dot"></span> Online</div>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" id="clearBtn" title="Vymazať chat">🗑️ Vymazať</button>
+      <button class="icon-btn" id="changeKeyBtn" title="Zmeniť API kľúč">🔑 Kľúč</button>
+      <a class="icon-btn" href="index.html">← Späť</a>
+    </div>
+  </header>
+
+  <div id="messagesArea">
+    <!-- Welcome screen -->
+    <div id="welcome">
+      <div class="big-icon">✨</div>
+      <h2>Ahoj! Som váš AI asistent</h2>
+      <p>Opýtaj sa ma čokoľvek — pomôžem ti s otázkami, vysvetlím pojmy alebo si jednoducho pokecáme.</p>
+      <div class="suggestion-chips">
+        <div class="chip" data-text="Ako sa volajú študenti na tejto stránke?">👥 Kto sú študenti?</div>
+        <div class="chip" data-text="Povedz mi vtip v slovenčine.">😄 Povedz vtip</div>
+        <div class="chip" data-text="Čo je to API a na čo slúži?">🔌 Čo je API?</div>
+        <div class="chip" data-text="Vysvetli mi, ako funguje Flask v Pythone.">🐍 Ako funguje Flask?</div>
+      </div>
+    </div>
+
+    <!-- Typing indicator -->
+    <div id="typingIndicator">
+      <div class="typing-avatar">🤖</div>
+      <div class="typing-bubble">
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="inputArea">
+    <div class="input-wrapper">
+      <textarea id="msgInput" rows="1" placeholder="Napíš správu..."></textarea>
+      <button id="sendBtn" title="Odoslať">↑</button>
+    </div>
+    <div class="char-hint">Stlač Enter odoslať • Shift+Enter nový riadok</div>
+  </div>
+</div>
+
+<script>
+  const SYSTEM_PROMPT = `Si priateľský a inteligentný AI asistent pre stránku Student Gallery.
+Táto stránka zobrazuje zoznam študentov (Peter Hruška, Jana Malá, Michal Kováč, Lucia Srnková, Marek Vysoký, Ema Biela, Dávid Čierny, Simona Veselá, Jakub Dlhý, Katarína Šikovná).
+Backend je napísaný vo Flasku (Python) a frontend používa čisté HTML/CSS/JavaScript.
+Odpovedáš v slovenčine, ak sa ťa pýtajú po slovensky. Ak sa pýtajú po anglicky, odpovedáš po anglicky.
+Si nápomocný, priateľský a stručný. Používaj emoji kde to je vhodné.`;
+
+  const GEMINI_URL = key =>
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`;
+
+  /* ── State ── */
+  let apiKey = localStorage.getItem('gemini_api_key') || '';
+  let history = []; // { role: 'user'|'model', parts: [{text}] }
+
+  const keyModal      = document.getElementById('keyModal');
+  const apiKeyInput   = document.getElementById('apiKeyInput');
+  const saveKeyBtn    = document.getElementById('saveKeyBtn');
+  const keyError      = document.getElementById('keyError');
+  const messagesArea  = document.getElementById('messagesArea');
+  const welcome       = document.getElementById('welcome');
+  const typingInd     = document.getElementById('typingIndicator');
+  const msgInput      = document.getElementById('msgInput');
+  const sendBtn       = document.getElementById('sendBtn');
+  const clearBtn      = document.getElementById('clearBtn');
+  const changeKeyBtn  = document.getElementById('changeKeyBtn');
+
+  /* ── Modal ── */
+  function openModal() { keyModal.classList.remove('hidden'); }
+  function closeModal() { keyModal.classList.add('hidden'); }
+
+  if (apiKey) closeModal();
+
+  saveKeyBtn.addEventListener('click', async () => {
+    const val = apiKeyInput.value.trim();
+    if (!val) { keyError.textContent = 'Prosím zadaj API kľúč.'; return; }
+    saveKeyBtn.disabled = true;
+    saveKeyBtn.textContent = 'Overujem…';
+    keyError.textContent = '';
+    // Quick validation ping
+    try {
+      const res = await fetch(GEMINI_URL(val), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ role:'user', parts:[{text:'hi'}] }] })
+      });
+      if (!res.ok && res.status === 400) {
+        const body = await res.json();
+        // 400 with API_KEY_INVALID or quota means key is wrong
+        if (body?.error?.status === 'INVALID_ARGUMENT' && body?.error?.message?.includes('API key')) {
+          throw new Error('Neplatný API kľúč.');
+        }
+      }
+      // If we get any response (even 400 for empty content) key format is okay
+      apiKey = val;
+      localStorage.setItem('gemini_api_key', apiKey);
+      closeModal();
+    } catch(e) {
+      keyError.textContent = e.message || 'Chyba overovania kľúča.';
+    }
+    saveKeyBtn.disabled = false;
+    saveKeyBtn.textContent = 'Aktivovať AI Chat ✨';
+  });
+
+  changeKeyBtn.addEventListener('click', () => {
+    apiKeyInput.value = apiKey;
+    openModal();
+  });
+
+  /* ── Messages ── */
+  function formatTime() {
+    return new Date().toLocaleTimeString('sk-SK', { hour:'2-digit', minute:'2-digit' });
+  }
+
+  function renderMarkdown(text) {
+    return text
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g,'<em>$1</em>')
+      .replace(/`(.*?)`/g,'<code>$1</code>')
+      .replace(/^### (.+)$/gm,'<strong>$1</strong>')
+      .replace(/^## (.+)$/gm,'<strong>$1</strong>')
+      .replace(/^# (.+)$/gm,'<strong>$1</strong>')
+      .replace(/^[-•] (.+)$/gm,'<li>$1</li>')
+      .replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>')
+      .replace(/\n\n/g,'</p><p>')
+      .replace(/\n/g,'<br>')
+      .replace(/^(.+)$/,'<p>$1</p>');
+  }
+
+  function addMessage(role, text) {
+    welcome.style.display = 'none';
+
+    const wrap = document.createElement('div');
+    wrap.className = `msg-wrap ${role}`;
+
+    const avatar = document.createElement('div');
+    avatar.className = 'msg-avatar';
+    avatar.textContent = role === 'ai' ? '🤖' : '🧑';
+
+    const col = document.createElement('div');
+
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+    if (role === 'ai') {
+      bubble.innerHTML = renderMarkdown(text);
+    } else {
+      bubble.textContent = text;
+    }
+
+    const timeEl = document.createElement('div');
+    timeEl.className = 'msg-time';
+    timeEl.textContent = formatTime();
+
+    col.appendChild(bubble);
+    col.appendChild(timeEl);
+    wrap.appendChild(avatar);
+    wrap.appendChild(col);
+
+    messagesArea.insertBefore(wrap, typingInd);
+    scrollToBottom();
+  }
+
+  function scrollToBottom() {
+    messagesArea.scrollTop = messagesArea.scrollHeight;
+  }
+
+  function showTyping() {
+    typingInd.classList.add('show');
+    scrollToBottom();
+  }
+  function hideTyping() {
+    typingInd.classList.remove('show');
+  }
+
+  /* ── Send ── */
+  async function sendMessage(text) {
+    const trimmed = text.trim();
+    if (!trimmed) return;
+    if (!apiKey) { openModal(); return; }
+
+    addMessage('user', trimmed);
+    history.push({ role: 'user', parts: [{ text: trimmed }] });
+
+    msgInput.value = '';
+    msgInput.style.height = 'auto';
+    sendBtn.disabled = true;
+    showTyping();
+
+    try {
+      const res = await fetch(GEMINI_URL(apiKey), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+          contents: history,
+          generationConfig: {
+            temperature: 0.85,
+            maxOutputTokens: 1024,
+          }
+        })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        const msg = data?.error?.message || `Chyba ${res.status}`;
+        if (res.status === 400 && msg.toLowerCase().includes('api key')) {
+          keyError.textContent = 'API kľúč je neplatný.';
+          openModal();
+        }
+        throw new Error(msg);
+      }
+
+      const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || '(prázdna odpoveď)';
+      history.push({ role: 'model', parts: [{ text: aiText }] });
+      hideTyping();
+      addMessage('ai', aiText);
+
+    } catch (err) {
+      hideTyping();
+      addMessage('ai', `⚠️ Chyba: ${err.message}`);
+      console.error(err);
+    }
+
+    sendBtn.disabled = false;
+    msgInput.focus();
+  }
+
+  /* ── Input auto-resize ── */
+  msgInput.addEventListener('input', () => {
+    msgInput.style.height = 'auto';
+    msgInput.style.height = Math.min(msgInput.scrollHeight, 140) + 'px';
+  });
+
+  msgInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage(msgInput.value);
+    }
+  });
+
+  sendBtn.addEventListener('click', () => sendMessage(msgInput.value));
+
+  /* ── Chips ── */
+  document.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const txt = chip.dataset.text;
+      msgInput.value = txt;
+      sendMessage(txt);
+    });
+  });
+
+  /* ── Clear ── */
+  clearBtn.addEventListener('click', () => {
+    history = [];
+    // Remove all message wraps
+    messagesArea.querySelectorAll('.msg-wrap').forEach(el => el.remove());
+    welcome.style.display = 'flex';
+  });
+</script>
+</body>
+</html>
