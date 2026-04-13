@@ -2,181 +2,270 @@
 <html lang="sk">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Student Gallery</title>
-
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-body{ 
-    margin:0;
-    font-family: Arial, Helvetica, sans-serif;
-    min-height: 100vh;
-    background: linear-gradient(135deg,#1e3c72,#2a5298);
-    color: linear-gradient(90deg, #9bbcff, #709df0);
-    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
-    text-align:center; 
-}
+    :root {
+      --bg-from: #0f0c29;
+      --bg-mid:  #302b63;
+      --bg-to:   #24243e;
+      --accent:  #709df0;
+      --accent2: #a78bfa;
+      --glass-bg: rgba(255, 255, 255, 0.05);
+      --glass-border: rgba(255, 255, 255, 0.1);
+      --card-bg: rgba(255, 255, 255, 0.08);
+      --text: #e8eaf6;
+      --text-muted: #9fa8da;
+      --shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
 
-h1 {
-    font-size: 40px;
-    letter-spacing: 2px;
-    background: rgb(37, 28, 28);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    color: transparent;
-}
+    body { 
+        margin:0;
+        min-height: 100vh;
+        background: linear-gradient(135deg, var(--bg-from), var(--bg-mid), var(--bg-to));
+        color: var(--text);
+        font-family: 'Inter', sans-serif;
+        text-align: center; 
+        padding-bottom: 80px; /* space for FAB */
+    }
 
-#mojDivVJs{
-    display:grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px,1fr));
-    gap:25px;
-    padding:40px;
-    max-width:1200px;
-    margin:auto;
-}
+    header {
+        padding: 60px 20px 40px;
+    }
 
-.drinkCard{
-    background: linear-gradient(90deg, #709df0, #3c5c94);
-    border-radius:15px;
-    padding:15px;
-    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
-    color:black;
-    box-shadow:0 10px 25px rgba(0,0,0,0.3);
-    transition:transform 0.3s, box-shadow 0.3s;
-    transition: all 0.3s ease;
-    cursor: pointer;
-}
+    h1 {
+        font-size: 48px;
+        font-weight: 700;
+        letter-spacing: -1px;
+        background: linear-gradient(90deg, var(--accent), var(--accent2));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 20px;
+    }
 
-.drinkDetail{
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease;
-}
+    /* ── SEARCH BAR ── */
+    .search-container {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 40px;
+    }
 
-.drinkCard.active .drinkDetail{
-    max-height: 100px;
-    margin-top:10px;
-}
+    #searchBar {
+        width: 100%;
+        max-width: 400px;
+        padding: 14px 24px;
+        font-size: 16px;
+        font-family: 'Inter', sans-serif;
+        border-radius: 50px;
+        border: 1px solid var(--glass-border);
+        background: var(--glass-bg);
+        color: var(--text);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+        outline: none;
+    }
 
-.drinkCard.active{
-    background: linear-gradient(90deg, #9bbcff, #5a7bd8);
-}
+    #searchBar::placeholder {
+        color: var(--text-muted);
+    }
 
-.drinkCard:hover{
-    transform:scale(1.05);
-    box-shadow:0 15px 35px rgba(0,0,0,0.4);
-}
+    #searchBar:focus {
+        border-color: var(--accent);
+        background: rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 25px rgba(112, 157, 240, 0.3);
+    }
 
-.drinkCard img{
-    width:100%;
-    border-radius:10px;
-}
+    /* ── GRID ── */
+    #mojDivVJs {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 30px;
+        padding: 0 40px 40px;
+        max-width: 1200px;
+        margin: auto;
+    }
 
-.drinkName{
-    margin-top:10px;
-    font-weight:bold;
-    font-size:18px;
-}
+    /* ── CARDS ── */
+    .drinkCard {
+        background: var(--card-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        padding: 20px;
+        color: var(--text);
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(12px);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+    }
 
-footer{
-    margin-top:30px;
-    padding:20px;
-    opacity:0.7;
-}
+    .drinkCard::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        border-radius: 20px;
+        background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+    }
 
-#chatFab {
-    position: fixed;
-    bottom: 28px;
-    right: 28px;
-    background: linear-gradient(135deg, #709df0, #a78bfa);
-    color: #fff;
-    border: none;
-    border-radius: 50px;
-    padding: 14px 22px;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    box-shadow: 0 6px 28px rgba(112,157,240,0.55);
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: transform 0.2s, box-shadow 0.2s;
-    animation: fabPulse 2.5s infinite;
-    z-index: 999;
-}
-#chatFab:hover {
-    transform: translateY(-3px) scale(1.04);
-    box-shadow: 0 10px 36px rgba(112,157,240,0.7);
-}
-@keyframes fabPulse {
-    0%,100% { box-shadow: 0 6px 28px rgba(112,157,240,0.55); }
-    50%      { box-shadow: 0 6px 38px rgba(167,139,250,0.75); }
-}
+    .drinkCard:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+        border-color: rgba(112, 157, 240, 0.4);
+    }
 
-.chatBtn {
-    display: block;
-    margin-top: 10px;
-    padding: 7px 14px;
-    border-radius: 8px;
-    background: linear-gradient(135deg, #709df0, #a78bfa);
-    color: #fff;
-    font-size: 13px;
-    font-weight: 600;
-    text-decoration: none;
-    text-align: center;
-    transition: opacity 0.2s, transform 0.15s;
-}
-.chatBtn:hover { opacity: 0.88; transform: scale(1.03); }
+    .drinkCard:hover::before { opacity: 1; }
+    
+    .drinkCard.active {
+        background: rgba(112, 157, 240, 0.15);
+        border-color: var(--accent);
+        box-shadow: 0 0 30px rgba(112, 157, 240, 0.3);
+    }
 
-#mojDivVJS2{
-    margin: 10px;
-}
+    .drinkCard img {
+        width: 120px;
+        height: 120px;
+        object-fit: cover;
+        border-radius: 50%;
+        margin-bottom: 16px;
+        border: 3px solid var(--glass-border);
+        transition: transform 0.3s ease;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+    
+    .drinkCard:hover img {
+        transform: scale(1.05);
+        border-color: var(--accent);
+    }
 
-#searchBar {
-  width: 300px;
-  padding: 10px 15px;
-  font-size: 16px;
-  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
-  border-radius: 10px;
-  border: none;
-  margin: 20px auto;
-  display: block; 
-  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-  background: linear-gradient(90deg, #709df0, #3c5c94);
-  color: black; 
-}
+    .drinkName {
+        font-weight: 600;
+        font-size: 20px;
+        margin-bottom: 5px;
+        letter-spacing: 0.5px;
+    }
 
-#searchBar::placeholder {
-  color: #444;
-  opacity: 1;
-}
+    .drinkDetail {
+        width: 100%;
+        max-height: 0;
+        opacity: 0;
+        overflow: hidden;
+        transition: all 0.4s ease;
+        text-align: center;
+        font-size: 14px;
+        color: var(--text-muted);
+    }
 
-#searchBar:focus {
-  outline: none;
-  box-shadow: 0 5px 20px rgba(0,0,0,0.3);
-  color: black;
-}
+    .drinkCard.active .drinkDetail {
+        max-height: 120px;
+        opacity: 1;
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid var(--glass-border);
+    }
 
+    /* ── CARD BUTTON ── */
+    .chatBtn {
+        display: inline-block;
+        margin-top: 12px;
+        padding: 10px 20px;
+        border-radius: 50px;
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        color: #fff;
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: transform 0.2s, box-shadow 0.2s;
+        box-shadow: 0 4px 15px rgba(112, 157, 240, 0.4);
+    }
+    .chatBtn:hover { 
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(112, 157, 240, 0.6);
+    }
+    .chatBtn:active {
+        transform: translateY(1px);
+    }
+
+    footer {
+        margin-top: 50px;
+        padding: 30px;
+        opacity: 0.5;
+        font-size: 13px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+
+    /* ── FLOATING CHAT BUTTON ── */
+    #chatFab {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        color: #fff;
+        border: none;
+        border-radius: 50px;
+        padding: 16px 26px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: 0 8px 30px rgba(112,157,240,0.6);
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s;
+        animation: fabPulse 3s infinite;
+        z-index: 999;
+    }
+    #chatFab:hover {
+        transform: translateY(-5px) scale(1.05);
+        box-shadow: 0 12px 40px rgba(167,139,250,0.8);
+    }
+    @keyframes fabPulse {
+        0%,100% { box-shadow: 0 8px 30px rgba(112,157,240,0.5); }
+        50%      { box-shadow: 0 8px 45px rgba(167,139,250,0.7); }
+    }
+
+    @media (max-width: 600px) {
+        #mojDivVJs { grid-template-columns: 1fr; padding: 0 20px; }
+        h1 { font-size: 36px; }
+    }
 </style>
 </head>
 
 <body>
 
-<h1>Student</h1>
-<input type="text" id="searchBar" placeholder="Hľadaj študenta..." />
+<header>
+    <h1>Student Gallery</h1>
+    <div class="search-container">
+        <input type="text" id="searchBar" placeholder="🔍 Hľadaj študenta podľa mena..." />
+    </div>
+</header>
+
 <div id="mojDivVJs"></div>
 <div id="mojDivVJs2"></div>
 <div id="textDiv"></div>
 
 <footer>
-Student API demo
+    Student API demo
 </footer>
 
-<a id="chatFab" href="chat.html">💬 AI Chat</a>
+<a id="chatFab" href="chat.html">✨ AI Chat Asistent</a>
 
 <script>
-const mojDivVJs = document.getElementById("mojDivVJs");  // malé 's' na konci
+const mojDivVJs = document.getElementById("mojDivVJs");
 const searchBar = document.getElementById("searchBar");
 
 fetch("https://raw.githubusercontent.com/iitslukas/backend/refs/heads/main/docs/data.json")
@@ -197,11 +286,12 @@ fetch("https://raw.githubusercontent.com/iitslukas/backend/refs/heads/main/docs/
 
       const studentDetail = document.createElement("div");
       studentDetail.className = "drinkDetail";
-      studentDetail.innerHTML = `ID: ${student.id || "neznámy"}`;
+      studentDetail.innerHTML = `Student ID: <strong>${student.id || "neznámy"}</strong><br>`;
 
       const chatBtn = document.createElement("a");
       chatBtn.className = "chatBtn";
-      chatBtn.textContent = "💬 Chatovať";
+      chatBtn.innerHTML = "💬 Otvoriť Chat";
+      // Adding URL parameters to pre-load student context in chat
       const params = new URLSearchParams({
         id: student.id,
         meno: student.meno,
@@ -209,6 +299,8 @@ fetch("https://raw.githubusercontent.com/iitslukas/backend/refs/heads/main/docs/
         image: student.image
       });
       chatBtn.href = `chat.html?${params.toString()}`;
+      
+      // Prevent the card click from firing when clicking the button
       chatBtn.addEventListener("click", e => e.stopPropagation());
       studentDetail.appendChild(chatBtn);
 
@@ -216,6 +308,7 @@ fetch("https://raw.githubusercontent.com/iitslukas/backend/refs/heads/main/docs/
       card.appendChild(studentName);
       card.appendChild(studentDetail);
 
+      // Accordion click effect
       card.addEventListener("click", () => {
         document.querySelectorAll(".drinkCard").forEach(c => {
           if (c !== card) c.classList.remove("active");
@@ -226,13 +319,14 @@ fetch("https://raw.githubusercontent.com/iitslukas/backend/refs/heads/main/docs/
       mojDivVJs.appendChild(card);
     });
   })
-  .catch(err => console.error("Chyba pri načítaní:", err));
+  .catch(err => console.error("Chyba pri načítaní dát:", err));
 
+// Live search filter
 searchBar.addEventListener("input", () => {
   const filter = searchBar.value.toLowerCase();
   mojDivVJs.querySelectorAll(".drinkCard").forEach(card => {
     const name = card.querySelector(".drinkName").textContent.toLowerCase();
-    card.style.display = name.includes(filter) ? "block" : "none";
+    card.style.display = name.includes(filter) ? "flex" : "none";
   });
 });
 </script>

@@ -433,9 +433,9 @@
 <!-- App -->
 <div id="app">
   <header>
-    <div class="header-avatar">🤖</div>
+    <div class="header-avatar" id="headerAvatar">🤖</div>
     <div class="header-info">
-      <h1>Gemini AI Asistent</h1>
+      <h1 id="headerTitle">Gemini AI Asistent</h1>
       <div class="status"><span class="status-dot"></span> Online</div>
     </div>
     <div class="header-actions">
@@ -480,7 +480,7 @@
 </div>
 
 <script>
-  const SYSTEM_PROMPT = `Si priateľský a inteligentný AI asistent pre stránku Student Gallery.
+  let SYSTEM_PROMPT = `Si priateľský a inteligentný AI asistent pre stránku Student Gallery.
 Táto stránka zobrazuje nasledovných 10 študentov (zo súboru data.json):
 
 ID 1  – Peter Hruška
@@ -517,6 +517,25 @@ Si nápomocný, priateľský a stručný. Používaj emoji kde to je vhodné.`;
   const sendBtn       = document.getElementById('sendBtn');
   const clearBtn      = document.getElementById('clearBtn');
   const changeKeyBtn  = document.getElementById('changeKeyBtn');
+
+  // URL Parameters for student roleplay
+  const urlParams = new URLSearchParams(window.location.search);
+  const studentMeno = urlParams.get('meno');
+  const studentPriezvisko = urlParams.get('priezvisko');
+  const studentImage = urlParams.get('image');
+
+  if (studentMeno && studentPriezvisko) {
+    document.getElementById('headerTitle').textContent = `${studentMeno} ${studentPriezvisko}`;
+    welcome.querySelector('h2').textContent = `Ahoj! Som ${studentMeno} ${studentPriezvisko}`;
+    welcome.querySelector('p').textContent = `Opýtaj sa ma čokoľvek. Budem s tebou chatovať ako študent našej školy!`;
+    
+    // Update system prompt for roleplay
+    SYSTEM_PROMPT = `Tvoje meno je ${studentMeno} ${studentPriezvisko}. Si skutočný človek a študent na škole. Odpovedaj na otázky ako tento študent s vlastnou osobnosťou. Odpovedaj stručne a priateľsky po slovensky. Používaj emoji. Nehovor, že si AI asistent, pokiaľ sa ťa to vyslovene nespýtajú.`;
+    
+    if (studentImage) {
+      document.getElementById('headerAvatar').innerHTML = `<img src="${studentImage}" alt="avatar" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+    }
+  }
 
   /* ── Modal ── */
   function openModal() { keyModal.classList.remove('hidden'); }
