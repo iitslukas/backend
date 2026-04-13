@@ -79,7 +79,7 @@ def chat():
         contents = raw_history + [{"role": "user", "parts": [{"text": user_message}]}]
 
         response = client.models.generate_content(
-            model="gemini-2.0-flash",
+            model="gemini-3-flash-preview",
             contents=contents,
             config=types.GenerateContentConfig(
                 system_instruction=SYSTEM_PROMPT,
