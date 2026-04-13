@@ -1,20 +1,32 @@
 import os
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 
 app = Flask(__name__)
 CORS(app)
 
 # --- Gemini setup ---
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-if GEMINI_API_KEY:
-    genai.configure(api_key=GEMINI_API_KEY)
+client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else None
 
 SYSTEM_PROMPT = """Si priateľský a inteligentný AI asistent pre stránku Student Gallery.
-Táto stránka zobrazuje zoznam študentov (Peter Hruška, Jana Malá, Michal Kováč,
-Lucia Srnková, Marek Vysoký, Ema Biela, Dávid Čierny, Simona Veselá, Jakub Dlhý, Katarína Šikovná).
-Backend je napísaný vo Flasku (Python) a frontend používa čisté HTML/CSS/JavaScript.
+Táto stránka zobrazuje nasledovných 10 študentov (zo súboru data.json):
+
+ID 1  – Peter Hruška
+ID 2  – Jana Malá
+ID 3  – Michal Kováč
+ID 4  – Lucia Srnková
+ID 5  – Marek Vysoký
+ID 6  – Ema Biela
+ID 7  – Dávid Čierny
+ID 8  – Simona Veselá
+ID 9  – Jakub Dlhý
+ID 10 – Katarína Šikovná
+
+Dáta sú dostupné cez GitHub Raw: https://raw.githubusercontent.com/iitslukas/backend/refs/heads/main/docs/data.json
+Backend je napísaný vo Flasku (Python), frontend používa čisté HTML/CSS/JavaScript.
 Odpovedáš v slovenčine, ak sa ťa pýtajú po slovensky. Ak sa pýtajú po anglicky, odpovedáš po anglicky.
 Si nápomocný, priateľský a stručný. Používaj emoji kde to je vhodné."""
 
@@ -52,7 +64,7 @@ def get_student(student_id):
 # --- AI Chat route ---
 @app.route('/api/chat', methods=['POST'])
 def chat():
-    if not GEMINI_API_KEY:
+    if not client:
         return jsonify({"error": "GEMINI_API_KEY nie je nastavený na serveri."}), 500
 
     data = request.get_json()
@@ -60,17 +72,21 @@ def chat():
         return jsonify({"error": "Chýba pole 'message'."}), 400
 
     user_message = data['message']
-    # history: list of {"role": "user"|"model", "parts": [{"text": "..."}]}
     raw_history = data.get('history', [])
 
     try:
-        model = genai.GenerativeModel(
-            model_name="gemini-2.0-flash",
-            system_instruction=SYSTEM_PROMPT
+        # Build contents list from history + new message
+        contents = raw_history + [{"role": "user", "parts": [{"text": user_message}]}]
+
+        response = client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=contents,
+            config=types.GenerateContentConfig(
+                system_instruction=SYSTEM_PROMPT,
+                temperature=0.85,
+                max_output_tokens=1024,
+            )
         )
-        # Build chat with existing history (excluding the last user message)
-        chat_session = model.start_chat(history=raw_history[:-1] if raw_history else [])
-        response = chat_session.send_message(user_message)
         return jsonify({"response": response.text})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
