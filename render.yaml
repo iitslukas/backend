@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: student-gallery
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn test_db:app
+    envVars:
+      - key: DB_HOST
+        value: dpg-d7ng6tpf9bms738ggtv0-a
+      - key: DB_PORT
+        value: 5432
+      - key: DB_NAME
+        value: database_87435
+      - key: DB_USER
+        value: database_87435_user
+      - key: DB_PASSWORD
+        value: 6uImoKTzI7jrORsyibzwuQqByoK1W5BA

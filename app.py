@@ -1,4 +1,6 @@
 import os
+import psycopg2
+import psycopg2.extras
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from google import genai
@@ -7,61 +9,57 @@ from google.genai import types
 app = Flask(__name__)
 CORS(app)
 
+# --- Database ---
+DB_CONFIG = {
+    "host":     os.getenv("DB_HOST",     "dpg-d7ng6tpf9bms738ggtv0-a.oregon-postgres.render.com"),
+    "port":     os.getenv("DB_PORT",     "5432"),
+    "dbname":   os.getenv("DB_NAME",     "database_87435"),
+    "user":     os.getenv("DB_USER",     "database_87435_user"),
+    "password": os.getenv("DB_PASSWORD", "6uImoKTzI7jrORsyibzwuQqByoK1W5BA"),
+}
+
+def get_db():
+    return psycopg2.connect(**DB_CONFIG, cursor_factory=psycopg2.extras.RealDictCursor)
+
+def init_db():
+    sql_path = os.path.join(os.path.dirname(__file__), "students.sql")
+    with get_db() as conn, conn.cursor() as cur, open(sql_path, "r", encoding="utf-8") as f:
+        cur.execute(f.read())
+
+try:
+    init_db()
+except Exception as e:
+    print(f"DB init warning: {e}")
+
 # --- Gemini setup ---
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else None
 
 SYSTEM_PROMPT = """Si priateľský a inteligentný AI asistent pre stránku Student Gallery.
-Táto stránka zobrazuje nasledovných 10 študentov (zo súboru data.json):
-
-ID 1  – Peter Hruška
-ID 2  – Jana Malá
-ID 3  – Michal Kováč
-ID 4  – Lucia Srnková
-ID 5  – Marek Vysoký
-ID 6  – Ema Biela
-ID 7  – Dávid Čierny
-ID 8  – Simona Veselá
-ID 9  – Jakub Dlhý
-ID 10 – Katarína Šikovná
-
-Dáta sú dostupné cez GitHub Raw: https://raw.githubusercontent.com/iitslukas/backend/refs/heads/main/docs/data.json
-Backend je napísaný vo Flasku (Python), frontend používa čisté HTML/CSS/JavaScript.
+Backend je napísaný vo Flasku (Python) s PostgreSQL, frontend používa čisté HTML/CSS/JavaScript.
 Odpovedáš v slovenčine, ak sa ťa pýtajú po slovensky. Ak sa pýtajú po anglicky, odpovedáš po anglicky.
 Si nápomocný, priateľský a stručný. Používaj emoji kde to je vhodné."""
 
-# --- Student data ---
-studenti = [
-    {"id": 1, "meno": "Peter", "priezvisko": "Hruška", "image": "https://picsum.photos/id/1/200"},
-    {"id": 2, "meno": "Jana", "priezvisko": "Malá", "image": "https://picsum.photos/id/10/200"},
-    {"id": 3, "meno": "Michal", "priezvisko": "Kováč", "image": "https://picsum.photos/id/20/200"},
-    {"id": 4, "meno": "Lucia", "priezvisko": "Srnková", "image": "https://picsum.photos/id/30/200"},
-    {"id": 5, "meno": "Marek", "priezvisko": "Vysoký", "image": "https://picsum.photos/id/40/200"},
-    {"id": 6, "meno": "Ema", "priezvisko": "Biela", "image": "https://picsum.photos/id/50/200"},
-    {"id": 7, "meno": "Dávid", "priezvisko": "Čierny", "image": "https://picsum.photos/id/60/200"},
-    {"id": 8, "meno": "Simona", "priezvisko": "Veselá", "image": "https://picsum.photos/id/70/200"},
-    {"id": 9, "meno": "Jakub", "priezvisko": "Dlhý", "image": "https://picsum.photos/id/80/200"},
-    {"id": 10, "meno": "Katarína", "priezvisko": "Šikovná", "image": "https://picsum.photos/id/90/200"},
-]
-
-# --- Existing routes ---
+# --- Routes ---
 @app.route('/')
 def home():
-    return "Vitajte na mojom prvom backend API!"
+    return "Vitajte na Student Gallery API!"
 
 @app.route('/api')
 def get_all_students():
-    return jsonify(studenti)
+    with get_db() as conn, conn.cursor() as cur:
+        cur.execute("SELECT * FROM students ORDER BY id")
+        return jsonify(cur.fetchall())
 
 @app.route('/api/student/<int:student_id>')
 def get_student(student_id):
-    # Hľadáme študenta podľa ID
-    student = next((s for s in studenti if s["id"] == student_id), None)
+    with get_db() as conn, conn.cursor() as cur:
+        cur.execute("SELECT * FROM students WHERE id = %s", (student_id,))
+        student = cur.fetchone()
     if student:
         return jsonify(student)
     return jsonify({"error": "Študent sa nenašiel"}), 404
 
-# --- AI Chat route ---
 @app.route('/api/chat', methods=['POST'])
 def chat():
     if not client:
@@ -75,11 +73,9 @@ def chat():
     raw_history = data.get('history', [])
 
     try:
-        # Build contents list from history + new message
         contents = raw_history + [{"role": "user", "parts": [{"text": user_message}]}]
-
         response = client.models.generate_content(
-            model="gemini-3-flash-preview",
+            model="gemini-2.0-flash-lite",
             contents=contents,
             config=types.GenerateContentConfig(
                 system_instruction=SYSTEM_PROMPT,
