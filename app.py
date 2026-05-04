@@ -9,11 +9,11 @@ CORS(app)
 
 def get_db():
     return psycopg2.connect(
-        host=os.environ["DB_HOST"],
-        port=os.environ.get("DB_PORT", "5432"),
-        dbname=os.environ["DB_NAME"],
-        user=os.environ["DB_USER"],
-        password=os.environ["DB_PASSWORD"],
+        host=os.getenv("DB_HOST", "dpg-d7ng6tpf9bms738ggtv0-a.oregon-postgres.render.com"),
+        port=os.getenv("DB_PORT", "5432"),
+        dbname=os.getenv("DB_NAME", "database_87435"),
+        user=os.getenv("DB_USER", "database_87435_user"),
+        password=os.getenv("DB_PASSWORD", "6uImoKTzI7jrORsyibzwuQqByoK1W5BA"),
         cursor_factory=psycopg2.extras.RealDictCursor,
     )
 

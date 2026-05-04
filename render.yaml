@@ -6,7 +6,7 @@ services:
     startCommand: gunicorn app:app
     envVars:
       - key: DB_HOST
-        value: dpg-d7ng6tpf9bms738ggtv0-a
+        value: dpg-d7ng6tpf9bms738ggtv0-a.oregon-postgres.render.com
       - key: DB_PORT
         value: 5432
       - key: DB_NAME
