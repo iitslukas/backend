@@ -40,15 +40,13 @@ def get_student(student_id: int) -> Response:
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# ── SPA fallback (serves React app for any non-API route) ────────────────────
+@app.route("/chat")
+def chat_page() -> Response:
+    return send_from_directory("docs", "chat.html")
 
-@app.route("/", defaults={"path": ""})
-@app.route("/<path:path>")
-def serve(path: str) -> Response:
-    file_path = os.path.join(app.static_folder, path)  # type: ignore[arg-type]
-    if path and os.path.isfile(file_path):
-        return send_from_directory(app.static_folder, path)
-    return send_from_directory(app.static_folder, "index.html")
+@app.route("/")
+def index() -> Response:
+    return send_from_directory("docs", "index.html")
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
