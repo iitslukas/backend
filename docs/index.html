@@ -100,7 +100,12 @@
       gap: 20px; padding: 0 20px; margin-bottom: 48px;
       position: relative; z-index: 1;
     }
-    .search-wrap { width: 100%; max-width: 480px; }
+    .search-row {
+      display: flex; gap: 10px;
+      width: 100%; max-width: 600px;
+      align-items: stretch;
+    }
+    .search-wrap { flex: 1; min-width: 0; }
     .search-box {
       position: relative;
       background: var(--s1);
@@ -124,6 +129,49 @@
       background: transparent; border: none; outline: none; color: var(--text);
     }
     #searchBar::placeholder { color: var(--dim); }
+
+    /* Sort */
+    .sort-wrap { position: relative; flex-shrink: 0; }
+    .sort-btn {
+      display: flex; align-items: center; gap: 8px;
+      height: 100%; padding: 0 18px;
+      background: var(--s1); border: 1px solid var(--border);
+      border-radius: 16px; backdrop-filter: blur(16px);
+      font-size: 14px; font-weight: 500; color: var(--muted);
+      font-family: 'Inter', sans-serif; cursor: pointer; white-space: nowrap;
+      transition: border-color .2s, background .2s, color .2s;
+    }
+    .sort-btn:hover, .sort-btn.open {
+      border-color: rgba(167,139,250,.45); color: var(--text); background: var(--s2);
+    }
+    .sort-arrow { font-size: 11px; color: var(--dim); transition: transform .2s; }
+    .sort-btn.open .sort-arrow { transform: rotate(180deg); }
+
+    .sort-dropdown {
+      position: absolute; top: calc(100% + 8px); right: 0;
+      background: #0d0d1c; border: 1px solid var(--border);
+      border-radius: 14px; padding: 6px; min-width: 210px;
+      z-index: 100; box-shadow: 0 20px 60px rgba(0,0,0,.7);
+      animation: slideDown .2s cubic-bezier(.16,1,.3,1);
+    }
+    .sort-dropdown.hidden { display: none; }
+    .sort-hd {
+      padding: 6px 12px 3px;
+      font-size: 10px; font-weight: 600;
+      color: var(--dim); letter-spacing: .8px; text-transform: uppercase;
+    }
+    .sort-sep { height: 1px; background: var(--border); margin: 5px 4px; }
+    .sort-opt {
+      display: flex; align-items: center; justify-content: space-between;
+      width: 100%; padding: 9px 12px; border-radius: 9px; border: none;
+      background: transparent; color: var(--muted);
+      font-size: 13px; font-weight: 500; font-family: 'Inter', sans-serif;
+      cursor: pointer; text-align: left;
+      transition: background .15s, color .15s;
+    }
+    .sort-opt:hover { background: var(--s2); color: var(--text); }
+    .sort-opt.active { color: var(--v); background: rgba(167,139,250,.1); }
+    .sort-opt.active::after { content: "✓"; font-size: 11px; }
 
     .stats-bar { display: flex; gap: 12px; }
     .stat-pill {
@@ -309,6 +357,7 @@
       0%   { background-position: 200% 0; }
       100% { background-position: -200% 0; }
     }
+    @keyframes slideDown { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
     @keyframes drift1 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(70px,50px); } }
     @keyframes drift2 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(-55px,-45px); } }
     @keyframes drift3 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(35px,-55px); } }
@@ -335,10 +384,33 @@
   </section>
 
   <div class="controls">
-    <div class="search-wrap">
-      <div class="search-box">
-        <span class="si">🔍</span>
-        <input id="searchBar" type="text" placeholder="Hľadaj podľa mena…" autocomplete="off" />
+    <div class="search-row">
+      <div class="search-wrap">
+        <div class="search-box">
+          <span class="si">🔍</span>
+          <input id="searchBar" type="text" placeholder="Hľadaj podľa mena…" autocomplete="off" />
+        </div>
+      </div>
+      <div class="sort-wrap">
+        <button class="sort-btn" id="sortBtn">
+          <span id="sortLabel">ID ↑</span>
+          <span class="sort-arrow">▾</span>
+        </button>
+        <div class="sort-dropdown hidden" id="sortDropdown">
+          <div class="sort-hd">Podľa ID</div>
+          <button class="sort-opt active" data-sort="id_asc"      data-label="ID ↑">ID (1 → 10)</button>
+          <button class="sort-opt"        data-sort="id_desc"     data-label="ID ↓">ID (10 → 1)</button>
+          <div class="sort-sep"></div>
+          <div class="sort-hd">Abecedne</div>
+          <button class="sort-opt" data-sort="name_asc"     data-label="Meno A→Z">Meno (A → Z)</button>
+          <button class="sort-opt" data-sort="name_desc"    data-label="Meno Z→A">Meno (Z → A)</button>
+          <button class="sort-opt" data-sort="surname_asc"  data-label="Priezvisko A→Z">Priezvisko (A → Z)</button>
+          <button class="sort-opt" data-sort="surname_desc" data-label="Priezvisko Z→A">Priezvisko (Z → A)</button>
+          <div class="sort-sep"></div>
+          <div class="sort-hd">Podľa veku</div>
+          <button class="sort-opt" data-sort="age_asc"  data-label="Vek ↑">Vek (mladší → starší)</button>
+          <button class="sort-opt" data-sort="age_desc" data-label="Vek ↓">Vek (starší → mladší)</button>
+        </div>
       </div>
     </div>
     <div class="stats-bar">
@@ -353,22 +425,17 @@
   <a class="fab" href="/chat">✨ AI Chat</a>
 
   <script>
-    const grid        = document.getElementById('grid');
-    const searchBar   = document.getElementById('searchBar');
-    const totalCount  = document.getElementById('totalCount');
-    const visibleCount= document.getElementById('visibleCount');
+    const grid         = document.getElementById('grid');
+    const searchBar    = document.getElementById('searchBar');
+    const totalCount   = document.getElementById('totalCount');
+    const visibleCount = document.getElementById('visibleCount');
+    const sortBtn      = document.getElementById('sortBtn');
+    const sortDropdown = document.getElementById('sortDropdown');
+    const sortLabel    = document.getElementById('sortLabel');
 
     let all = [];
 
-    /* Skeleton placeholders while loading */
-    grid.innerHTML = Array.from({ length: 6 }, () => `
-      <div class="sk-card">
-        <div class="sk sk-av"></div>
-        <div class="sk sk-nm"></div>
-        <div class="sk sk-rl"></div>
-        <div class="sk sk-btn"></div>
-      </div>`).join('');
-
+    /* ── Render cards ── */
     function render(students) {
       grid.innerHTML = '';
       if (!students.length) {
@@ -383,7 +450,6 @@
         const params = new URLSearchParams({ meno: s.meno, priezvisko: s.priezvisko, image: s.image });
         const c = document.createElement('div');
         c.className = 'card';
-        c.dataset.n = `${s.meno} ${s.priezvisko}`.toLowerCase();
         c.style.animationDelay = `${idx * 55}ms`;
         c.innerHTML = `
           <div class="av-ring">
@@ -396,6 +462,7 @@
             <div class="exp-inner">
               <div class="drow"><span>Meno</span><strong>${s.meno}</strong></div>
               <div class="drow"><span>Priezvisko</span><strong>${s.priezvisko}</strong></div>
+              ${s.vek != null ? `<div class="drow"><span>Vek</span><strong>${s.vek} rokov</strong></div>` : ''}
               <div class="drow"><span>ID</span><strong>#${s.id}</strong></div>
             </div>
           </div>
@@ -411,36 +478,69 @@
       });
     }
 
-    fetch('/api')
-      .then(r => {
-        if (!r.ok) throw new Error(`Server vrátil ${r.status}`);
-        return r.json();
-      })
-      .then(data => {
-        if (data.error) throw new Error(data.error);
-        all = data;
-        totalCount.textContent  = data.length;
-        visibleCount.textContent = data.length;
-        render(data);
-      })
-      .catch(err => {
-        totalCount.textContent  = '—';
-        visibleCount.textContent = '—';
-        grid.innerHTML = `
-          <div class="error-state">
-            <div class="error-icon">⚠️</div>
-            <div class="error-title">Nepodarilo sa načítať študentov</div>
-            <div class="error-msg">${err.message}</div>
-            <button class="retry-btn" onclick="location.reload()">↺ Skúsiť znova</button>
-          </div>`;
-      });
-
-    searchBar.addEventListener('input', () => {
+    /* ── Apply search filter on top of current sorted list ── */
+    function applySearch() {
       const q = searchBar.value.toLowerCase().trim();
       const filtered = q ? all.filter(s => `${s.meno} ${s.priezvisko}`.toLowerCase().includes(q)) : all;
       visibleCount.textContent = filtered.length;
       render(filtered);
+    }
+
+    /* ── Fetch sorted data from Python backend ── */
+    function loadStudents(sort) {
+      grid.innerHTML = Array.from({ length: 6 }, () => `
+        <div class="sk-card">
+          <div class="sk sk-av"></div><div class="sk sk-nm"></div>
+          <div class="sk sk-rl"></div><div class="sk sk-btn"></div>
+        </div>`).join('');
+
+      fetch(`/api?sort=${sort}`)
+        .then(r => { if (!r.ok) throw new Error(`Server vrátil ${r.status}`); return r.json(); })
+        .then(data => {
+          if (data.error) throw new Error(data.error);
+          all = data;
+          totalCount.textContent = data.length;
+          applySearch();
+        })
+        .catch(err => {
+          totalCount.textContent = visibleCount.textContent = '—';
+          grid.innerHTML = `
+            <div class="error-state">
+              <div class="error-icon">⚠️</div>
+              <div class="error-title">Nepodarilo sa načítať študentov</div>
+              <div class="error-msg">${err.message}</div>
+              <button class="retry-btn" onclick="location.reload()">↺ Skúsiť znova</button>
+            </div>`;
+        });
+    }
+
+    /* ── Sort dropdown ── */
+    sortBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      sortDropdown.classList.toggle('hidden');
+      sortBtn.classList.toggle('open');
     });
+    document.addEventListener('click', () => {
+      sortDropdown.classList.add('hidden');
+      sortBtn.classList.remove('open');
+    });
+    document.querySelectorAll('.sort-opt').forEach(opt => {
+      opt.addEventListener('click', e => {
+        e.stopPropagation();
+        document.querySelectorAll('.sort-opt').forEach(o => o.classList.remove('active'));
+        opt.classList.add('active');
+        sortLabel.textContent = opt.dataset.label;
+        sortDropdown.classList.add('hidden');
+        sortBtn.classList.remove('open');
+        loadStudents(opt.dataset.sort);
+      });
+    });
+
+    /* ── Search ── */
+    searchBar.addEventListener('input', applySearch);
+
+    /* ── Initial load ── */
+    loadStudents('id_asc');
   </script>
 </body>
 </html>

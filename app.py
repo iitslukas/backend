@@ -1,7 +1,7 @@
 import os
 import psycopg2
 import psycopg2.extras
-from flask import Flask, jsonify, send_from_directory, Response
+from flask import Flask, jsonify, send_from_directory, Response, request
 from flask_cors import CORS
 
 app = Flask(__name__, static_folder="docs", static_url_path="")
@@ -21,10 +21,27 @@ def get_db():
 
 @app.route("/api")
 def get_students() -> Response:
+    sort = request.args.get("sort", "id_asc")
     try:
         with get_db() as conn, conn.cursor() as cur:
             cur.execute("SELECT * FROM students ORDER BY id")
-            return jsonify(cur.fetchall())
+            students = list(cur.fetchall())
+
+        sort_map = {
+            "id_asc":       (lambda s: s["id"],                        False),
+            "id_desc":      (lambda s: s["id"],                        True),
+            "name_asc":     (lambda s: s["meno"].lower(),              False),
+            "name_desc":    (lambda s: s["meno"].lower(),              True),
+            "surname_asc":  (lambda s: s["priezvisko"].lower(),        False),
+            "surname_desc": (lambda s: s["priezvisko"].lower(),        True),
+            "age_asc":      (lambda s: s.get("vek") or 0,             False),
+            "age_desc":     (lambda s: s.get("vek") or 0,             True),
+        }
+        if sort in sort_map:
+            key_fn, reverse = sort_map[sort]
+            students = sorted(students, key=key_fn, reverse=reverse)
+
+        return jsonify(students)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
