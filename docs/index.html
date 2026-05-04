@@ -1,411 +1,488 @@
 <!DOCTYPE html>
 <html lang="sk">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Student Gallery</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Gallery</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-  :root {
-    --bg: #080812;
-    --surface: #0e0e1e;
-    --surface2: #13132a;
-    --border: rgba(255,255,255,0.08);
-    --accent: #6c8fff;
-    --accent2: #b07eff;
-    --accent-glow: rgba(108,143,255,0.25);
-    --text: #eef0ff;
-    --text-muted: #7b82a8;
-    --text-dim: #4a4f6b;
-    --radius: 18px;
-    --shadow-card: 0 4px 24px rgba(0,0,0,0.5);
-  }
+    :root {
+      --bg: #080812;
+      --surface: #0e0e1e;
+      --surface2: #13132a;
+      --border: rgba(255, 255, 255, 0.08);
+      --accent: #6c8fff;
+      --accent2: #b07eff;
+      --accent-glow: rgba(108, 143, 255, 0.25);
+      --text: #eef0ff;
+      --text-muted: #7b82a8;
+      --text-dim: #4a4f6b;
+      --radius: 18px;
+      --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.5);
+    }
 
-  html { scroll-behavior: smooth; }
+    html {
+      scroll-behavior: smooth;
+    }
 
-  body {
-    min-height: 100vh;
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Inter', sans-serif;
-    padding-bottom: 100px;
-  }
+    body {
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      padding-bottom: 100px;
+    }
 
-  /* ── NOISE OVERLAY ── */
-  body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 0;
-  }
+    /* ── NOISE OVERLAY ── */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
 
-  /* ── HERO ── */
-  .hero {
-    position: relative;
-    text-align: center;
-    padding: 80px 20px 60px;
-    overflow: hidden;
-  }
-  .hero::after {
-    content: "";
-    position: absolute;
-    top: -60px; left: 50%;
-    transform: translateX(-50%);
-    width: 600px; height: 400px;
-    background: radial-gradient(ellipse, rgba(108,143,255,0.12) 0%, transparent 70%);
-    pointer-events: none;
-  }
-  .hero-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 99px;
-    padding: 6px 16px;
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--text-muted);
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    margin-bottom: 24px;
-  }
-  .hero-badge span { color: var(--accent); }
+    /* ── HERO ── */
+    .hero {
+      position: relative;
+      text-align: center;
+      padding: 80px 20px 60px;
+      overflow: hidden;
+    }
 
-  h1 {
-    font-size: clamp(36px, 6vw, 64px);
-    font-weight: 800;
-    letter-spacing: -2px;
-    line-height: 1.1;
-    margin-bottom: 16px;
-    background: linear-gradient(135deg, #fff 30%, var(--accent2) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-  .hero-sub {
-    color: var(--text-muted);
-    font-size: 16px;
-    margin-bottom: 40px;
-  }
+    .hero::after {
+      content: "";
+      position: absolute;
+      top: -60px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 400px;
+      background: radial-gradient(ellipse, rgba(108, 143, 255, 0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
 
-  /* ── SEARCH ── */
-  .search-wrap {
-    display: flex;
-    justify-content: center;
-    padding: 0 20px;
-    margin-bottom: 48px;
-    position: relative;
-    z-index: 1;
-  }
-  .search-inner {
-    position: relative;
-    width: 100%;
-    max-width: 460px;
-  }
-  .search-icon {
-    position: absolute;
-    left: 18px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--text-dim);
-    font-size: 16px;
-    pointer-events: none;
-  }
-  #searchBar {
-    width: 100%;
-    padding: 15px 20px 15px 48px;
-    font-size: 15px;
-    font-family: 'Inter', sans-serif;
-    border-radius: 14px;
-    border: 1px solid var(--border);
-    background: var(--surface);
-    color: var(--text);
-    outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
-  }
-  #searchBar::placeholder { color: var(--text-dim); }
-  #searchBar:focus {
-    border-color: rgba(108,143,255,0.5);
-    box-shadow: 0 0 0 4px var(--accent-glow);
-  }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      padding: 6px 16px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
 
-  /* ── STATS BAR ── */
-  .stats-bar {
-    display: flex;
-    justify-content: center;
-    gap: 32px;
-    margin-bottom: 40px;
-    font-size: 13px;
-    color: var(--text-muted);
-  }
-  .stats-bar strong { color: var(--text); font-weight: 600; }
+    .hero-badge span {
+      color: var(--accent);
+    }
 
-  /* ── GRID ── */
-  #grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
-    padding: 0 40px 40px;
-    max-width: 1280px;
-    margin: 0 auto;
-    position: relative;
-    z-index: 1;
-  }
+    h1 {
+      font-size: clamp(36px, 6vw, 64px);
+      font-weight: 800;
+      letter-spacing: -2px;
+      line-height: 1.1;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, #fff 30%, var(--accent2) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
 
-  /* ── CARDS ── */
-  .drinkCard {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 28px 24px 22px;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: relative;
-    overflow: hidden;
-    transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
-  }
-  .drinkCard::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, rgba(108,143,255,0.06), transparent 60%);
-    opacity: 0;
-    transition: opacity 0.3s;
-    pointer-events: none;
-  }
-  .drinkCard:hover {
-    transform: translateY(-6px);
-    border-color: rgba(108,143,255,0.3);
-    box-shadow: 0 12px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(108,143,255,0.15);
-  }
-  .drinkCard:hover::before { opacity: 1; }
+    .hero-sub {
+      color: var(--text-muted);
+      font-size: 16px;
+      margin-bottom: 40px;
+    }
 
-  .drinkCard.active {
-    border-color: rgba(108,143,255,0.5);
-    box-shadow: 0 0 0 1px rgba(108,143,255,0.3), 0 8px 30px rgba(108,143,255,0.15);
-  }
+    /* ── SEARCH ── */
+    .search-wrap {
+      display: flex;
+      justify-content: center;
+      padding: 0 20px;
+      margin-bottom: 48px;
+      position: relative;
+      z-index: 1;
+    }
 
-  /* Avatar */
-  .avatar-ring {
-    position: relative;
-    margin-bottom: 18px;
-  }
-  .avatar-ring::before {
-    content: "";
-    position: absolute;
-    inset: -3px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    opacity: 0;
-    transition: opacity 0.3s;
-  }
-  .drinkCard.active .avatar-ring::before,
-  .drinkCard:hover .avatar-ring::before { opacity: 1; }
-  .drinkCard img {
-    width: 90px;
-    height: 90px;
-    object-fit: cover;
-    border-radius: 50%;
-    border: 3px solid var(--bg);
-    position: relative;
-    display: block;
-    transition: transform 0.3s;
-  }
-  .drinkCard:hover img { transform: scale(1.05); }
+    .search-inner {
+      position: relative;
+      width: 100%;
+      max-width: 460px;
+    }
 
-  /* ID badge on avatar */
-  .id-badge {
-    position: absolute;
-    bottom: 0; right: 0;
-    width: 24px; height: 24px;
-    border-radius: 50%;
-    background: var(--surface2);
-    border: 2px solid var(--bg);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 9px;
-    font-weight: 700;
-    color: var(--accent);
-    line-height: 1;
-  }
+    .search-icon {
+      position: absolute;
+      left: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-dim);
+      font-size: 16px;
+      pointer-events: none;
+    }
 
-  .drinkName {
-    font-weight: 700;
-    font-size: 17px;
-    letter-spacing: -0.3px;
-    margin-bottom: 4px;
-    text-align: center;
-  }
-  .card-role {
-    font-size: 12px;
-    color: var(--text-muted);
-    margin-bottom: 0;
-  }
+    #searchBar {
+      width: 100%;
+      padding: 15px 20px 15px 48px;
+      font-size: 15px;
+      font-family: 'Inter', sans-serif;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
 
-  /* Expandable detail */
-  .drinkDetail {
-    width: 100%;
-    max-height: 0;
-    opacity: 0;
-    overflow: hidden;
-    transition: max-height 0.4s ease, opacity 0.3s ease, margin-top 0.3s;
-    text-align: center;
-  }
-  .drinkCard.active .drinkDetail {
-    max-height: 200px;
-    opacity: 1;
-    margin-top: 18px;
-  }
-  .detail-inner {
-    padding-top: 18px;
-    border-top: 1px solid var(--border);
-  }
-  .detail-row {
-    display: flex;
-    justify-content: space-between;
-    font-size: 13px;
-    color: var(--text-muted);
-    margin-bottom: 14px;
-    padding: 0 4px;
-  }
-  .detail-row strong { color: var(--text); }
+    #searchBar::placeholder {
+      color: var(--text-dim);
+    }
 
-  /* Chat button always visible at bottom of card */
-  .card-footer {
-    width: 100%;
-    margin-top: auto;
-    padding-top: 16px;
-  }
-  .chatBtn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    width: 100%;
-    padding: 11px 20px;
-    border-radius: 10px;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    color: #fff;
-    font-size: 13px;
-    font-weight: 600;
-    text-decoration: none;
-    transition: opacity 0.2s, transform 0.15s;
-    box-shadow: 0 4px 20px rgba(108,143,255,0.35);
-  }
-  .chatBtn:hover { opacity: 0.9; transform: translateY(-1px); }
-  .chatBtn:active { transform: translateY(1px); }
+    #searchBar:focus {
+      border-color: rgba(108, 143, 255, 0.5);
+      box-shadow: 0 0 0 4px var(--accent-glow);
+    }
 
-  /* ── FAB ── */
-  #chatFab {
-    position: fixed;
-    bottom: 28px;
-    right: 28px;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    color: #fff;
-    border: none;
-    border-radius: 14px;
-    padding: 14px 22px;
-    font-size: 14px;
-    font-weight: 600;
-    font-family: 'Inter', sans-serif;
-    cursor: pointer;
-    box-shadow: 0 8px 30px rgba(108,143,255,0.5);
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: transform 0.25s cubic-bezier(.175,.885,.32,1.275), box-shadow 0.25s;
-    z-index: 999;
-  }
-  #chatFab:hover {
-    transform: translateY(-4px) scale(1.03);
-    box-shadow: 0 14px 40px rgba(176,126,255,0.6);
-  }
+    /* ── STATS BAR ── */
+    .stats-bar {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      margin-bottom: 40px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
 
-  /* ── FOOTER ── */
-  footer {
-    text-align: center;
-    padding: 40px 20px;
-    font-size: 12px;
-    color: var(--text-dim);
-    letter-spacing: 1px;
-    text-transform: uppercase;
-  }
+    .stats-bar strong {
+      color: var(--text);
+      font-weight: 600;
+    }
 
-  /* ── EMPTY STATE ── */
-  #emptyState {
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-    padding: 60px 20px;
-    color: var(--text-muted);
-    font-size: 15px;
-    grid-column: 1 / -1;
-  }
-  #emptyState .empty-icon { font-size: 48px; }
+    /* ── GRID ── */
+    #grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+      padding: 0 40px 40px;
+      max-width: 1280px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
 
-  /* ── RESPONSIVE ── */
-  @media (max-width: 640px) {
-    #grid { grid-template-columns: 1fr; padding: 0 16px; }
-    h1 { letter-spacing: -1px; }
-    #chatFab { bottom: 20px; right: 16px; padding: 12px 18px; }
-  }
-</style>
+    /* ── CARDS ── */
+    .drinkCard {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 24px 22px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .drinkCard::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(108, 143, 255, 0.06), transparent 60%);
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+
+    .drinkCard:hover {
+      transform: translateY(-6px);
+      border-color: rgba(108, 143, 255, 0.3);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(108, 143, 255, 0.15);
+    }
+
+    .drinkCard:hover::before {
+      opacity: 1;
+    }
+
+    .drinkCard.active {
+      border-color: rgba(108, 143, 255, 0.5);
+      box-shadow: 0 0 0 1px rgba(108, 143, 255, 0.3), 0 8px 30px rgba(108, 143, 255, 0.15);
+    }
+
+    /* Avatar */
+    .avatar-ring {
+      position: relative;
+      margin-bottom: 18px;
+    }
+
+    .avatar-ring::before {
+      content: "";
+      position: absolute;
+      inset: -3px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .drinkCard.active .avatar-ring::before,
+    .drinkCard:hover .avatar-ring::before {
+      opacity: 1;
+    }
+
+    .drinkCard img {
+      width: 90px;
+      height: 90px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 3px solid var(--bg);
+      position: relative;
+      display: block;
+      transition: transform 0.3s;
+    }
+
+    .drinkCard:hover img {
+      transform: scale(1.05);
+    }
+
+    /* ID badge on avatar */
+    .id-badge {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--surface2);
+      border: 2px solid var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1;
+    }
+
+    .drinkName {
+      font-weight: 700;
+      font-size: 17px;
+      letter-spacing: -0.3px;
+      margin-bottom: 4px;
+      text-align: center;
+    }
+
+    .card-role {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 0;
+    }
+
+    /* Expandable detail */
+    .drinkDetail {
+      width: 100%;
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      transition: max-height 0.4s ease, opacity 0.3s ease, margin-top 0.3s;
+      text-align: center;
+    }
+
+    .drinkCard.active .drinkDetail {
+      max-height: 200px;
+      opacity: 1;
+      margin-top: 18px;
+    }
+
+    .detail-inner {
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+      padding: 0 4px;
+    }
+
+    .detail-row strong {
+      color: var(--text);
+    }
+
+    /* Chat button always visible at bottom of card */
+    .card-footer {
+      width: 100%;
+      margin-top: auto;
+      padding-top: 16px;
+    }
+
+    .chatBtn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 11px 20px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: opacity 0.2s, transform 0.15s;
+      box-shadow: 0 4px 20px rgba(108, 143, 255, 0.35);
+    }
+
+    .chatBtn:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
+    .chatBtn:active {
+      transform: translateY(1px);
+    }
+
+    /* ── FAB ── */
+    #chatFab {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff;
+      border: none;
+      border-radius: 14px;
+      padding: 14px 22px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      box-shadow: 0 8px 30px rgba(108, 143, 255, 0.5);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: transform 0.25s cubic-bezier(.175, .885, .32, 1.275), box-shadow 0.25s;
+      z-index: 999;
+    }
+
+    #chatFab:hover {
+      transform: translateY(-4px) scale(1.03);
+      box-shadow: 0 14px 40px rgba(176, 126, 255, 0.6);
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center;
+      padding: 40px 20px;
+      font-size: 12px;
+      color: var(--text-dim);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    /* ── EMPTY STATE ── */
+    #emptyState {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      padding: 60px 20px;
+      color: var(--text-muted);
+      font-size: 15px;
+      grid-column: 1 / -1;
+    }
+
+    #emptyState .empty-icon {
+      font-size: 48px;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 640px) {
+      #grid {
+        grid-template-columns: 1fr;
+        padding: 0 16px;
+      }
+
+      h1 {
+        letter-spacing: -1px;
+      }
+
+      #chatFab {
+        bottom: 20px;
+        right: 16px;
+        padding: 12px 18px;
+      }
+    }
+  </style>
 </head>
+
 <body>
 
-<div class="hero">
-  <div class="hero-badge"><span>✦</span> Student API Demo</div>
-  <h1>Student Gallery</h1>
-  <p class="hero-sub">Zoznam študentov · Klikni na kartu pre viac detailov</p>
-</div>
-
-<div class="search-wrap">
-  <div class="search-inner">
-    <span class="search-icon">🔍</span>
-    <input type="text" id="searchBar" placeholder="Hľadaj podľa mena..." autocomplete="off" />
+  <div class="hero">
+    <div class="hero-badge"><span>✦</span> Student API Demo</div>
+    <h1>Student Gallery</h1>
+    <p class="hero-sub">Zoznam študentov · Klikni na kartu pre viac detailov</p>
   </div>
-</div>
 
-<div class="stats-bar">
-  <div>Celkom: <strong id="totalCount">—</strong> študentov</div>
-  <div>Zobrazených: <strong id="visibleCount">—</strong></div>
-</div>
+  <div class="search-wrap">
+    <div class="search-inner">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchBar" placeholder="Hľadaj podľa mena..." autocomplete="off" />
+    </div>
+  </div>
 
-<div id="grid"></div>
+  <div class="stats-bar">
+    <div>Celkom: <strong id="totalCount">—</strong> študentov</div>
+    <div>Zobrazených: <strong id="visibleCount">—</strong></div>
+  </div>
 
-<footer>Student Gallery · Flask + Gemini AI</footer>
+  <div id="grid"></div>
 
-<a id="chatFab" href="/chat">✨ AI Chat</a>
+  <footer>Student Gallery</footer>
 
-<script>
-const grid = document.getElementById("grid");
-const searchBar = document.getElementById("searchBar");
-const totalCount = document.getElementById("totalCount");
-const visibleCount = document.getElementById("visibleCount");
+  <a id="chatFab" href="/chat">✨ AI Chat</a>
 
-fetch("/api")
-  .then(r => r.json())
-  .then(data => {
-    totalCount.textContent = data.length;
-    visibleCount.textContent = data.length;
+  <script>
+    const grid = document.getElementById("grid");
+    const searchBar = document.getElementById("searchBar");
+    const totalCount = document.getElementById("totalCount");
+    const visibleCount = document.getElementById("visibleCount");
 
-    data.forEach(student => {
-      const card = document.createElement("div");
-      card.className = "drinkCard";
-      card.dataset.name = `${student.meno} ${student.priezvisko}`.toLowerCase();
+    fetch("/api")
+      .then(r => r.json())
+      .then(data => {
+        totalCount.textContent = data.length;
+        visibleCount.textContent = data.length;
 
-      const params = new URLSearchParams({ id: student.id, meno: student.meno, priezvisko: student.priezvisko, image: student.image });
+        data.forEach(student => {
+          const card = document.createElement("div");
+          card.className = "drinkCard";
+          card.dataset.name = `${student.meno} ${student.priezvisko}`.toLowerCase();
 
-      card.innerHTML = `
+          const params = new URLSearchParams({ id: student.id, meno: student.meno, priezvisko: student.priezvisko, image: student.image });
+
+          card.innerHTML = `
         <div class="avatar-ring">
           <img src="${student.image}" alt="${student.meno}" loading="lazy">
           <div class="id-badge">#${student.id}</div>
@@ -422,27 +499,28 @@ fetch("/api")
           <a class="chatBtn" href="/chat?${params}">💬 Chatovať so študentom</a>
         </div>`;
 
-      card.addEventListener("click", e => {
-        if (e.target.closest("a")) return;
-        document.querySelectorAll(".drinkCard.active").forEach(c => { if (c !== card) c.classList.remove("active"); });
-        card.classList.toggle("active");
+          card.addEventListener("click", e => {
+            if (e.target.closest("a")) return;
+            document.querySelectorAll(".drinkCard.active").forEach(c => { if (c !== card) c.classList.remove("active"); });
+            card.classList.toggle("active");
+          });
+
+          grid.appendChild(card);
+        });
+      })
+      .catch(err => console.error("Chyba pri načítaní dát:", err));
+
+    searchBar.addEventListener("input", () => {
+      const q = searchBar.value.toLowerCase();
+      let visible = 0;
+      grid.querySelectorAll(".drinkCard").forEach(card => {
+        const match = card.dataset.name.includes(q);
+        card.style.display = match ? "flex" : "none";
+        if (match) visible++;
       });
-
-      grid.appendChild(card);
+      visibleCount.textContent = visible;
     });
-  })
-  .catch(err => console.error("Chyba pri načítaní dát:", err));
-
-searchBar.addEventListener("input", () => {
-  const q = searchBar.value.toLowerCase();
-  let visible = 0;
-  grid.querySelectorAll(".drinkCard").forEach(card => {
-    const match = card.dataset.name.includes(q);
-    card.style.display = match ? "flex" : "none";
-    if (match) visible++;
-  });
-  visibleCount.textContent = visible;
-});
-</script>
+  </script>
 </body>
+
 </html>
